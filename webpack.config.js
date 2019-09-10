@@ -1,15 +1,32 @@
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.join(__dirname, '/dist'),
-    filename: 'index-bundle.js',
-    publicPath: '/',
+    path: path.join(__dirname, '/build'),
+    filename: 'main.js',
+    // publicPath: './',
+  },
+  resolve: {
+    extensions: [/* '', */ '.js', '.jsx'],
+    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    alias: {
+      'react-dom$': 'react-dom/profiling',
+      'scheduler/tracing': 'scheduler/tracing-profiling',
+    },
   },
   module: {
     rules: [
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: 'html-loader',
+          },
+        ],
+      },
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -34,11 +51,13 @@ module.exports = {
     ],
   },
   devServer: {
+    contentBase: path.join(__dirname, './src'),
     historyApiFallback: true,
     hot: true,
     port: 8030,
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: './src/index.html',
     }),
