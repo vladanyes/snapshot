@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import photoApi from '../../api/photo';
 
 import styles from './style.scss';
 
@@ -57,8 +58,6 @@ class Home extends Component {
       this.canvas.current.height = this.height;
 
       context.drawImage(this.video.current, 0, 0, this.width, this.height);
-      // const img = this.canvas.current.toDataURL('image/png');
-      // this.uploadImg(img);
 
       this.setState(prevState => {
         if (!prevState.isCanvasFilled) {
@@ -76,14 +75,16 @@ class Home extends Component {
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   };
 
-  uploadImg = img => {
+  uploadImg = () => {
+    const img = this.canvas.current.toDataURL('image/png');
+
     fetch(img)
       .then(res => res.blob())
       .then(blob => {
         const formData = new FormData();
-        formData.append('file', blob);
+        formData.append('file', blob, `Snapshot_${new Date().toISOString()}.png`);
 
-        // photosApi.upload(formData).then(data => console.warn('data', data));
+        photoApi.upload(formData).then(res => console.warn('res', res));
       });
   };
 
@@ -116,9 +117,14 @@ class Home extends Component {
           <div className={styles.Home__canvas} style={{ width, height }}>
             <canvas ref={this.canvas} />
             {isCanvasFilled && (
-              <button onClick={this.downloadImg} className={styles.Home__button_dowload}>
-                Download
-              </button>
+              <>
+                <button onClick={this.downloadImg} className={styles.Home__button_dowload}>
+                  Download
+                </button>
+                <button onClick={this.uploadImg} className={styles.Home__button_upload}>
+                Upload
+                </button>
+              </>
             )}
           </div>
         </div>
