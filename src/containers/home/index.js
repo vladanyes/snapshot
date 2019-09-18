@@ -114,7 +114,7 @@ class Home extends Component {
     return filesArr.map(({ name, url }) => {
       return (
         <li key={name}>
-          <a href={url}>{name}</a>
+          <a href={url} target='_blank'>{name}</a>
         </li>
       );
     });
