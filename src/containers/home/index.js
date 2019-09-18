@@ -8,6 +8,7 @@ class Home extends Component {
     super(props);
     this.state = {
       isCanvasFilled: false,
+      uploadedFiles: [],
     };
 
     this.video = React.createRef();
@@ -82,16 +83,25 @@ class Home extends Component {
       .then(res => res.blob())
       .then(blob => {
         const formData = new FormData();
-        formData.append('file', blob, `Snapshot_${new Date().toISOString()}.png`);
+        formData.append('file', blob, `Snapshot_${Date.now()}.png`);
 
-        photoApi.upload(formData).then(res => console.warn('res', res));
+        return photoApi.upload(formData).then(({ data }) => {
+          this.setState(prevState => {
+            return {
+              uploadedFiles: [...prevState.uploadedFiles, data],
+            };
+          });
+        });
+      })
+      .catch(err => {
+        throw new Error(err);
       });
   };
 
   downloadImg = () => {
     this.canvas.current.toBlob(blob => {
       let link = document.createElement('a');
-      link.download = `Snapshot_${new Date().toISOString()}.png`;
+      link.download = `Snapshot_${Date.now()}.png`;
 
       link.href = URL.createObjectURL(blob);
       link.click();
@@ -100,9 +110,19 @@ class Home extends Component {
     }, 'image/png');
   };
 
+  renderUploadedFiles = filesArr => {
+    return filesArr.map(({ name, url }) => {
+      return (
+        <li key={name}>
+          <a href={url}>{name}</a>
+        </li>
+      );
+    });
+  };
+
   render() {
     const {
-      state: { isCanvasFilled },
+      state: { isCanvasFilled, uploadedFiles },
       width,
       height,
     } = this;
@@ -122,7 +142,7 @@ class Home extends Component {
                   Download
                 </button>
                 <button onClick={this.uploadImg} className={styles.Home__button_upload}>
-                Upload
+                  Upload
                 </button>
               </>
             )}
@@ -135,6 +155,12 @@ class Home extends Component {
         >
           Take photo
         </button>
+        {!!uploadedFiles.length && (
+          <div>
+            <h4>Your uploaded files:</h4>
+            <ul>{this.renderUploadedFiles(uploadedFiles)}</ul>
+          </div>
+        )}
       </>
     );
   }
