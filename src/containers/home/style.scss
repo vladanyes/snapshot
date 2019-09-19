@@ -1,8 +1,22 @@
 .Home {
+  &__video {
+    video {
+      box-shadow: 1px 1px 5px grey;
+    }
+  }
   &__canvas {
-    background-color: lightgrey;
+    background-color: transparent;
     margin-left: 20px;
     text-align: right;
+  }
+  &__controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  &__uploads {
+    margin-left: 15px;
   }
   &__button {
     &_upload {
@@ -35,15 +49,28 @@
       cursor: pointer;
       color: white;
       padding: 10px;
-      margin-top: 10px;
       border-radius: 5px;
       &:focus {
         border-color: transparent;
         outline: transparent;
       }
     }
+    &_disabled {
+      cursor: not-allowed;
+      opacity: .5;
+    }
+  }
+  &__select {
+    &_filter {
+      height: 34px;
+      cursor: pointer;
+      &:focus {
+        outline: 0;
+      }
+    }
   }
 }
 .Container {
   display: flex;
+  margin-left: 15px;
 }

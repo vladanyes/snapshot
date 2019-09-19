@@ -1,21 +1,36 @@
 import React, { Component } from 'react';
+import cn from 'classnames';
 import photoApi from '../../api/photo';
+import Select from '../../components/elements/select';
 
 import styles from './style.scss';
+
+const FILTER_OPTIONS = [
+  'invert(1)',
+  'blur(1px)',
+  'brightness(2)',
+  'contrast(2)',
+  'grayscale(1)',
+  'hue-rotate(90deg)',
+  'saturate(3)',
+  'sepia(1)',
+];
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
       isCanvasFilled: false,
+      isUploading: false,
       uploadedFiles: [],
+      filter: '',
     };
 
     this.video = React.createRef();
     this.canvas = React.createRef();
     this.startButton = React.createRef();
 
-    this.width = 320;
+    this.width = 400;
     this.height = 0;
 
     this.streaming = false;
@@ -51,6 +66,8 @@ class Home extends Component {
   };
 
   handleClick = e => {
+    const { filter } = this.state;
+
     e.preventDefault();
     const context = this.canvas.current.getContext('2d');
 
@@ -58,6 +75,7 @@ class Home extends Component {
       this.canvas.current.width = this.width;
       this.canvas.current.height = this.height;
 
+      context.filter = filter;
       context.drawImage(this.video.current, 0, 0, this.width, this.height);
 
       this.setState(prevState => {
@@ -72,12 +90,13 @@ class Home extends Component {
 
   clearPhoto = () => {
     const context = this.canvas.current.getContext('2d');
-    context.fillStyle = '#AAA';
+    context.fillStyle = 'transparent';
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   };
 
   uploadImg = () => {
     const img = this.canvas.current.toDataURL('image/png');
+    this.setState({ isUploading: true });
 
     fetch(img)
       .then(res => res.blob())
@@ -89,6 +108,7 @@ class Home extends Component {
           this.setState(prevState => {
             return {
               uploadedFiles: [...prevState.uploadedFiles, data],
+              isUploading: false,
             };
           });
         });
@@ -114,15 +134,19 @@ class Home extends Component {
     return filesArr.map(({ name, url }) => {
       return (
         <li key={name}>
-          <a href={url} target='_blank'>{name}</a>
+          <a href={url} target="_blank">
+            {name}
+          </a>
         </li>
       );
     });
   };
 
+  handleFilterChange = ({ target }) => this.setState({ filter: target.value });
+
   render() {
     const {
-      state: { isCanvasFilled, uploadedFiles },
+      state: { isUploading, isCanvasFilled, uploadedFiles, filter },
       width,
       height,
     } = this;
@@ -131,9 +155,25 @@ class Home extends Component {
       <>
         <h1>Webcam broadcast with snapshot func</h1>
         <div className={styles.Container}>
-          <video ref={this.video} onCanPlay={this.handleCanPlay}>
-            Video stream not available.
-          </video>
+          <div className={styles.Home__video}>
+            <video ref={this.video} onCanPlay={this.handleCanPlay} style={{ filter }} />
+            <div className={styles.Home__controls}>
+              <Select
+                value={filter}
+                onChange={this.handleFilterChange}
+                options={FILTER_OPTIONS}
+                placeholder="Choose filter"
+                className={styles.Home__select_filter}
+              />
+              <button
+                ref={this.startButton}
+                onClick={this.handleClick}
+                className={styles.Home__button_snapshot}
+              >
+                Take photo
+              </button>
+            </div>
+          </div>
           <div className={styles.Home__canvas} style={{ width, height }}>
             <canvas ref={this.canvas} />
             {isCanvasFilled && (
@@ -141,22 +181,22 @@ class Home extends Component {
                 <button onClick={this.downloadImg} className={styles.Home__button_dowload}>
                   Download
                 </button>
-                <button onClick={this.uploadImg} className={styles.Home__button_upload}>
+                <button
+                  onClick={this.uploadImg}
+                  disabled={isUploading}
+                  className={cn(
+                    styles.Home__button_upload,
+                    isUploading && styles.Home__button_disabled,
+                  )}
+                >
                   Upload
                 </button>
               </>
             )}
           </div>
         </div>
-        <button
-          ref={this.startButton}
-          onClick={this.handleClick}
-          className={styles.Home__button_snapshot}
-        >
-          Take photo
-        </button>
         {!!uploadedFiles.length && (
-          <div>
+          <div className={styles.Home__uploads}>
             <h4>Your uploaded files:</h4>
             <ul>{this.renderUploadedFiles(uploadedFiles)}</ul>
           </div>
