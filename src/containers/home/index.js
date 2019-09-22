@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import cn from 'classnames';
+import html2canvas from 'html2canvas';
 import photoApi from '../../api/photo';
 import Select from '../../components/elements/select';
+import glassFilter from '../../libs/jeelizFaceFilter/filters/comedy-glasses';
 
 import styles from './style.scss';
 
+const PATH_TO_NNC_FILE = '../../libs/jeelizFaceFilter/NNC.json';
+const FACE_FILTER_CANVAS = 'jeeFaceFilterCanvas';
 const FILTER_OPTIONS = [
   'invert(1)',
   'blur(1px)',
@@ -29,6 +33,8 @@ class Home extends Component {
     this.video = React.createRef();
     this.canvas = React.createRef();
     this.startButton = React.createRef();
+    this.glasses = React.createRef();
+    this.face = React.createRef();
 
     this.width = 400;
     this.height = 0;
@@ -46,8 +52,9 @@ class Home extends Component {
     navigator.getMedia(
       { video: true, audio: false },
       stream => {
-        this.video.current.srcObject = stream;
-        this.video.current.play();
+        // this.video.current.srcObject = stream;
+        // this.video.current.play();
+        glassFilter(this.glasses.current, FACE_FILTER_CANVAS, PATH_TO_NNC_FILE);
       },
       error => console.warn('An error occurred:', error),
     );
@@ -68,24 +75,28 @@ class Home extends Component {
   handleClick = e => {
     const { filter } = this.state;
 
-    e.preventDefault();
-    const context = this.canvas.current.getContext('2d');
+    html2canvas(document.body, { backgroundColor: 'red' }).then(function(canvas) {
+      document.body.appendChild(canvas);
+    });
 
-    if (this.width && this.height) {
-      this.canvas.current.width = this.width;
-      this.canvas.current.height = this.height;
-
-      context.filter = filter;
-      context.drawImage(this.video.current, 0, 0, this.width, this.height);
-
-      this.setState(prevState => {
-        if (!prevState.isCanvasFilled) {
-          return { isCanvasFilled: !prevState.isCanvasFilled };
-        }
-      });
-    } else {
-      this.clearPhoto();
-    }
+    // e.preventDefault();
+    // const context = this.canvas.current.getContext('2d');
+    //
+    // if (this.width && this.height) {
+    //   this.canvas.current.width = this.width;
+    //   this.canvas.current.height = this.height;
+    //
+    //   context.filter = filter;
+    //   context.drawImage(this.video.current, 0, 0, this.width, this.height);
+    //
+    //   this.setState(prevState => {
+    //     if (!prevState.isCanvasFilled) {
+    //       return { isCanvasFilled: !prevState.isCanvasFilled };
+    //     }
+    //   });
+    // } else {
+    //   this.clearPhoto();
+    // }
   };
 
   clearPhoto = () => {
@@ -156,7 +167,8 @@ class Home extends Component {
         <h1>Webcam broadcast with snapshot func</h1>
         <div className={styles.Container}>
           <div className={styles.Home__video}>
-            <video ref={this.video} onCanPlay={this.handleCanPlay} style={{ filter }} />
+            <div ref={this.glasses} id='jeelizFaceFilterFollow' />
+            <canvas ref={this.face} width="1024" height="1024" id={FACE_FILTER_CANVAS} style={{ filter }} />
             <div className={styles.Home__controls}>
               <Select
                 value={filter}

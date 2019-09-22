@@ -48,6 +48,10 @@ module.exports = {
           { loader: 'sass-loader', options: { sourceMap: true } },
         ],
       },
+      {
+        test: /\.(svg|gif|png|swf|jpg|otf|eot|ttf|woff|woff2)(\?.*)?$/,
+        use: [{ loader: 'url-loader', options: { limit: 100000, name: 'assets/[hash].[ext]' } }],
+      },
     ],
   },
   devServer: {
