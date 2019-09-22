@@ -174,11 +174,9 @@ function main(divElement, canvasId, NNCpath, video){
   JEEFACEFILTERAPI.init({
     canvasId: canvasId,
     NNCpath: NNCpath, // path to NNC.json file from where it will be called!!!
-
     videoSettings: {
       // 'videoElement': video,
     },
-
     animateDelay: 2, //let small delay to avoid DOM freeze
     callbackReady: function(errCode, spec){
       if (errCode){
